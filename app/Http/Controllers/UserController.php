@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateProfileRequest;
+use App\Http\Resources\EventResource;
 use App\Http\Resources\UserResource;
+use App\Models\Event;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -36,6 +38,26 @@ class UserController extends Controller
         $user = User::active()->where('username', $username)->firstOrFail();
 
         return $this->list($request, $user->following());
+    }
+
+    /**
+     * GET /users/{username}/events
+     * Volunteers: events they joined. Organizers: events their organization runs.
+     */
+    public function events(Request $request, string $username): AnonymousResourceCollection
+    {
+        $user = User::active()->with('organization')->where('username', $username)->firstOrFail();
+        $query = Event::forViewer($request->user())->published();
+
+        if ($user->isOrganizer()) {
+            $query->where('organization_id', $user->organization?->id ?? 0);
+        } else {
+            $query->whereHas('registrations', fn ($q) => $q
+                ->where('user_id', $user->id)
+                ->whereIn('status', Event::SPOT_STATUSES));
+        }
+
+        return EventResource::collection($query->latest('starts_at')->paginate(15));
     }
 
     /** PUT /profile (name, bio, avatar) — send as multipart/form-data when uploading an avatar. */

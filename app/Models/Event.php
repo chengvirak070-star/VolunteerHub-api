@@ -115,6 +115,22 @@ class Event extends Model
         $query->withCount(['registrations as joined_count' => fn ($q) => $q->whereIn('status', self::SPOT_STATUSES)]);
     }
 
+    /**
+     * Everything EventResource needs: organization (+ owner), category, joined_count,
+     * and for a logged-in viewer: is_joined, is_saved.
+     */
+    public function scopeForViewer(Builder $query, ?User $viewer): void
+    {
+        $query->with(['organization.user', 'category'])->withJoinedCount();
+
+        if ($viewer) {
+            $query->withExists([
+                'registrations as is_joined' => fn ($q) => $q->where('user_id', $viewer->id)->whereIn('status', self::SPOT_STATUSES),
+                'savedBy as is_saved' => fn ($q) => $q->where('users.id', $viewer->id),
+            ]);
+        }
+    }
+
     // ---------- Helpers ----------
 
     public function joinedCount(): int

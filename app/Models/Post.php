@@ -69,9 +69,38 @@ class Post extends Model
 
     // ---------- Scopes ----------
 
+    /** Visible posts whose author is not blocked. */
     public function scopeVisible(Builder $query): void
     {
-        $query->where('status', ContentStatus::Visible);
+        $query->where('posts.status', ContentStatus::Visible)
+            ->whereHas('user', fn ($q) => $q->where('status', 'active'));
+    }
+
+    /**
+     * Everything PostResource needs: author, linked event (with spots and "joined by me"),
+     * hashtags, likes_count, comments_count and is_liked for the viewer.
+     */
+    public function scopeForViewer(Builder $query, ?User $viewer): void
+    {
+        $query->with([
+            'user.organization',
+            'hashtags',
+            'event' => function ($q) use ($viewer) {
+                $q->withJoinedCount();
+                if ($viewer) {
+                    $q->withExists(['registrations as is_joined' => fn ($r) => $r
+                        ->where('user_id', $viewer->id)
+                        ->whereIn('status', Event::SPOT_STATUSES)]);
+                }
+            },
+        ])->withCount([
+            'likers as likes_count',
+            'comments as comments_count' => fn ($q) => $q->where('status', ContentStatus::Visible),
+        ]);
+
+        if ($viewer) {
+            $query->withExists(['likers as is_liked' => fn ($q) => $q->where('users.id', $viewer->id)]);
+        }
     }
 
     // ---------- Helpers ----------

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Notifications\NewFollower;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -14,8 +15,11 @@ class FollowController extends Controller
     {
         Gate::authorize('follow', $user);
 
-        $request->user()->following()->syncWithoutDetaching([$user->id]);
-        // Phase 5: notify $user about the new follower.
+        $changes = $request->user()->following()->syncWithoutDetaching([$user->id]);
+
+        if (! empty($changes['attached'])) {
+            $user->notify(new NewFollower($request->user()));
+        }
 
         return $this->state($user, true);
     }
