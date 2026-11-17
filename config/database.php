@@ -97,6 +97,13 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => env('DB_SSLMODE', 'prefer'),
+            // One network round trip per query instead of two (prepare + execute).
+            // Much faster on a far-away cloud database, and safe with Neon's connection pooler.
+            // Persistent: reuse the connection between requests (opening one to Neon takes ~2 s).
+            'options' => extension_loaded('pdo_pgsql') ? [
+                PDO::ATTR_EMULATE_PREPARES => true,
+                PDO::ATTR_PERSISTENT => (bool) env('DB_PERSISTENT', true),
+            ] : [],
         ],
 
         'sqlsrv' => [

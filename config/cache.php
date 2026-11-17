@@ -15,7 +15,7 @@ return [
     |
     */
 
-    'default' => env('CACHE_STORE', 'database'),
+    'default' => env('CACHE_STORE', 'file'), // file: avoids Neon pooler transaction errors and is faster
 
     /*
     |--------------------------------------------------------------------------
