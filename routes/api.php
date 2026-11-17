@@ -50,6 +50,7 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
 
     // Categories
     Route::get('categories', [CategoryController::class, 'index']);
+    Route::post('categories', [CategoryController::class, 'store'])->middleware(['role:organizer,admin', 'throttle:20,1']);
 
     // Events
     Route::get('events', [EventController::class, 'index']);
