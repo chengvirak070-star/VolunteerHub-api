@@ -6,6 +6,7 @@ use App\Models\Comment;
 use App\Models\Event;
 use App\Models\HourLog;
 use App\Models\Organization;
+use App\Models\PersonalAccessToken;
 use App\Models\Post;
 use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -13,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Sanctum\Sanctum;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,6 +25,9 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Login tokens: don't write "last used" to the database on every single request.
+        Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
+
         // Short names in polymorphic columns (reports.reportable_type, notifications.notifiable_type, tokens).
         Relation::enforceMorphMap([
             'user' => User::class,
