@@ -18,6 +18,9 @@ class StoreEventRequest extends FormRequest
             'title' => ['required', 'string', 'max:150'],
             'description' => ['required', 'string', 'max:5000'],
             'location' => ['required', 'string', 'max:200'],
+            // Optional map pin: send both or neither
+            'latitude' => ['nullable', 'numeric', 'between:-90,90', 'required_with:longitude'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180', 'required_with:latitude'],
             'starts_at' => ['required', 'date', 'after:now'],
             'ends_at' => ['required', 'date', 'after:starts_at'],
             'hours' => ['required', 'numeric', 'min:0.5', 'max:24'],

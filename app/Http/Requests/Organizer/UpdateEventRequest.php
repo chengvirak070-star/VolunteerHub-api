@@ -18,6 +18,8 @@ class UpdateEventRequest extends FormRequest
             'title' => ['sometimes', 'required', 'string', 'max:150'],
             'description' => ['sometimes', 'required', 'string', 'max:5000'],
             'location' => ['sometimes', 'required', 'string', 'max:200'],
+            'latitude' => ['sometimes', 'nullable', 'numeric', 'between:-90,90', 'required_with:longitude'],
+            'longitude' => ['sometimes', 'nullable', 'numeric', 'between:-180,180', 'required_with:latitude'],
             'starts_at' => ['sometimes', 'required', 'date'],
             'ends_at' => ['sometimes', 'required', 'date', 'after:starts_at'],
             'hours' => ['sometimes', 'required', 'numeric', 'min:0.5', 'max:24'],

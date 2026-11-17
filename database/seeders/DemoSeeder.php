@@ -114,6 +114,21 @@ class DemoSeeder extends Seeder
         return collect($names)->map(fn ($v) => $this->user($v[0], $v[1], "{$v[1]}@volunteerhub.test", Role::Volunteer, $v[2]));
     }
 
+    /** Approximate map pins for the demo locations (latitude, longitude). */
+    public const COORDINATES = [
+        'Riverside, Phnom Penh' => [11.5712, 104.9284], // Sisowath Quay
+        'Toul Kork, Phnom Penh' => [11.5795, 104.8976],
+        'Chroy Changvar, Phnom Penh' => [11.5939, 104.9283],
+        'Puok, Siem Reap' => [13.4425, 103.7472],
+        'Daun Penh, Phnom Penh' => [11.5733, 104.9206],
+        'Russey Keo, Phnom Penh' => [11.6200, 104.8990],
+        'Kep Beach, Kep' => [10.4836, 104.3165],
+        'Sen Sok, Phnom Penh' => [11.5989, 104.8664],
+        'Siem Reap City, Siem Reap' => [13.3633, 103.8564],
+        'Battambang City, Battambang' => [13.0957, 103.2022],
+        'Kampot Town, Kampot' => [10.6104, 104.1815],
+    ];
+
     /** @return Collection<int, Event> */
     private function events(Collection $orgs): Collection
     {
@@ -158,6 +173,8 @@ class DemoSeeder extends Seeder
                 'title' => $title,
                 'description' => $descriptions[$slug],
                 'location' => $location,
+                'latitude' => self::COORDINATES[$location][0] ?? null,
+                'longitude' => self::COORDINATES[$location][1] ?? null,
                 'starts_at' => $start,
                 'ends_at' => $start->copy()->addHours($hours),
                 'hours' => $hours,

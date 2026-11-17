@@ -24,6 +24,8 @@ class Event extends Model
         'title',
         'description',
         'location',
+        'latitude',
+        'longitude',
         'starts_at',
         'ends_at',
         'hours',
@@ -44,6 +46,8 @@ class Event extends Model
             'ends_at' => 'datetime',
             'reminder_sent_at' => 'datetime',
             'hours' => 'decimal:2',
+            'latitude' => 'float',
+            'longitude' => 'float',
             'capacity' => 'integer',
             'status' => EventStatus::class,
         ];
