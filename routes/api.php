@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\EventRegistrationController;
@@ -46,6 +47,9 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
     Route::get('posts/{post}/comments', [CommentController::class, 'index']);
     Route::post('posts/{post}/comments', [CommentController::class, 'store'])->middleware('throttle:30,1');
     Route::delete('comments/{comment}', [CommentController::class, 'destroy']);
+
+    // Categories
+    Route::get('categories', [CategoryController::class, 'index']);
 
     // Events
     Route::get('events', [EventController::class, 'index']);
