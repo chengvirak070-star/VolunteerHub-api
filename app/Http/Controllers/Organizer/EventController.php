@@ -29,7 +29,7 @@ class EventController extends Controller
         return EventResource::collection($events);
     }
 
-    /** POST /organizer/events — starts as "pending" until an admin approves it. */
+    /** POST /organizer/events — published right away ("open"); only the organization itself needs admin approval. */
     public function store(StoreEventRequest $request): JsonResponse
     {
         Gate::authorize('create', Event::class);
@@ -39,7 +39,7 @@ class EventController extends Controller
             $data['cover_path'] = $request->file('cover')->store('events', 'public');
         }
 
-        $event = $request->user()->organization->events()->create($data + ['status' => EventStatus::Pending]);
+        $event = $request->user()->organization->events()->create($data + ['status' => EventStatus::Open]);
 
         return (new EventResource(Event::forViewer($request->user())->find($event->id)))
             ->response()->setStatusCode(201);
