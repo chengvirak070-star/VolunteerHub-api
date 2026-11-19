@@ -11,7 +11,7 @@ class BugReport extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'message', 'page_url', 'status'];
+    protected $fillable = ['user_id', 'message', 'page_url', 'screenshot_path', 'status'];
 
     protected $attributes = [
         'status' => 'open',

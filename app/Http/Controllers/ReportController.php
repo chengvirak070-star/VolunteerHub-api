@@ -41,7 +41,14 @@ class ReportController extends Controller
     /** POST /bug-reports { message, page_url } */
     public function bug(StoreBugReportRequest $request): JsonResponse
     {
-        $bug = BugReport::create($request->validated() + ['user_id' => $request->user()->id]);
+        $data = $request->safe()->only(['message', 'page_url']);
+
+        // Optional screenshot (multipart/form-data)
+        if ($request->hasFile('screenshot')) {
+            $data['screenshot_path'] = $request->file('screenshot')->store('bug-reports', 'public');
+        }
+
+        $bug = BugReport::create($data + ['user_id' => $request->user()->id]);
 
         return response()->json(['data' => ['id' => $bug->id, 'message' => 'Thank you for reporting this problem.']], 201);
     }

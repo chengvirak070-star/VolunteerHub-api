@@ -16,6 +16,7 @@ class StoreBugReportRequest extends FormRequest
         return [
             'message' => ['required', 'string', 'min:5', 'max:2000'],
             'page_url' => ['nullable', 'string', 'max:500'],
+            'screenshot' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ];
     }
 }
