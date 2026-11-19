@@ -15,6 +15,9 @@ use App\Models\Comment;
 use App\Models\Post;
 use App\Models\Report;
 use App\Models\User;
+use App\Notifications\BugReportFixed;
+use App\Notifications\ReportReviewed;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
@@ -64,10 +67,22 @@ class ModerationController extends Controller
 
         $status = $action === 'dismiss' ? ReportStatus::Dismissed : ReportStatus::Resolved;
 
-        Report::where('reportable_type', $report->reportable_type)
+        $openReports = Report::with('reporter')
+            ->where('reportable_type', $report->reportable_type)
             ->where('reportable_id', $report->reportable_id)
-            ->where('status', ReportStatus::Open)
-            ->update(['status' => $status]);
+            ->where('status', ReportStatus::Open);
+
+        // Everyone who reported this item hears back (once each), without naming anyone.
+        $reporters = $openReports->get()->pluck('reporter')->filter()->unique('id');
+        $openReports->update(['status' => $status]);
+
+        $link = match (true) {
+            $target instanceof Post => '/posts/'.$target->id,
+            $target instanceof Comment => '/posts/'.$target->post_id,
+            $target instanceof User => '/u/'.$target->username,
+            default => null,
+        };
+        Notification::send($reporters, new ReportReviewed($report->reportable_type, $action, $link));
 
         return new ReportResource($report->fresh(['reporter.organization', 'reportable']));
     }
@@ -87,7 +102,13 @@ class ModerationController extends Controller
     /** POST /admin/bug-reports/{bugReport}/fixed */
     public function fixed(BugReport $bugReport): BugReportResource
     {
+        $wasOpen = $bugReport->status !== BugReportStatus::Fixed;
         $bugReport->update(['status' => BugReportStatus::Fixed]);
+
+        // Tell the person who reported it (only the first time it is marked fixed)
+        if ($wasOpen && $bugReport->user) {
+            $bugReport->user->notify(new BugReportFixed($bugReport));
+        }
 
         return new BugReportResource($bugReport->load('user.organization'));
     }
