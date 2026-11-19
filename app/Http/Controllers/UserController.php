@@ -64,7 +64,7 @@ class UserController extends Controller
     public function updateProfile(UpdateProfileRequest $request): UserResource
     {
         $user = $request->user();
-        $data = $request->safe()->only(['name', 'bio']);
+        $data = $request->safe()->only(['name', 'bio', 'city', 'school', 'skills', 'telegram', 'phone']);
 
         if ($request->hasFile('avatar')) {
             $old = $user->avatar_path;

@@ -111,7 +111,18 @@ class DemoSeeder extends Seeder
             ['Leakhena Sim', 'leakhena', 'អ្នកស្ម័គ្រចិត្តនៅភ្នំពេញ'],
         ];
 
-        return collect($names)->map(fn ($v) => $this->user($v[0], $v[1], "{$v[1]}@volunteerhub.test", Role::Volunteer, $v[2]));
+        $volunteers = collect($names)->map(fn ($v) => $this->user($v[0], $v[1], "{$v[1]}@volunteerhub.test", Role::Volunteer, $v[2]));
+
+        // A few profile details so profiles don't look empty
+        $cities = ['Phnom Penh', 'Phnom Penh', 'Phnom Penh', 'Siem Reap', 'Battambang', 'Kampot'];
+        $skills = [['Photography', 'Teaching', 'Computers'], ['Logistics', 'Driving'], ['Cooking'], ['First aid'], ['English', 'Reading with kids'], ['Gardening']];
+        $volunteers->each(fn ($u, $i) => $u->update([
+            'city' => $cities[$i % count($cities)],
+            'skills' => $skills[$i % count($skills)],
+            'school' => $i === 0 ? 'Royal University of Phnom Penh' : null,
+        ]));
+
+        return $volunteers;
     }
 
     /** Approximate map pins for the demo locations (latitude, longitude). */

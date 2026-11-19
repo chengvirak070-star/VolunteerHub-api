@@ -30,6 +30,11 @@ class User extends Authenticatable
         'password',
         'role',
         'bio',
+        'city',
+        'school',
+        'skills',
+        'telegram',
+        'phone',
         'avatar_path',
         'status',
     ];
@@ -47,6 +52,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'role' => Role::class,
+            'skills' => 'array',
             'status' => UserStatus::class,
         ];
     }

@@ -20,6 +20,11 @@ class UserResource extends JsonResource
             'username' => $this->username,
             'role' => $this->role,
             'bio' => $this->bio,
+            'city' => $this->city,
+            'school' => $this->school,
+            'skills' => $this->skills ?? [],
+            'telegram' => $this->telegram,
+            'phone' => $this->when($canSeePrivate, $this->phone), // private
             'avatar_url' => $this->avatarUrl(),
             'verified' => (bool) $this->organization?->verified,
             'email' => $this->when($canSeePrivate, $this->email),
