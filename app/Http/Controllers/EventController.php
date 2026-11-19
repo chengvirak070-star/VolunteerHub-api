@@ -44,8 +44,12 @@ class EventController extends Controller
             $query->whereRaw('LOWER(location) LIKE ?', ['%'.mb_strtolower($location).'%']);
         }
 
-        $from = $request->filled('from') ? Carbon::parse($request->input('from'))->startOfDay() : now()->startOfDay();
-        $query->where('starts_at', '>=', $from);
+        // Normal users: from today on. Admins: everything (past too) unless they pick a "from" date.
+        if ($request->filled('from')) {
+            $query->where('starts_at', '>=', Carbon::parse($request->input('from'))->startOfDay());
+        } elseif (! $user?->isAdmin()) {
+            $query->where('starts_at', '>=', now()->startOfDay());
+        }
         if ($request->filled('to')) {
             $query->where('starts_at', '<=', Carbon::parse($request->input('to'))->endOfDay());
         }
@@ -56,7 +60,10 @@ class EventController extends Controller
 
         $perPage = min(50, max(1, (int) $request->input('per_page', 15)));
 
-        return EventResource::collection($query->orderBy('starts_at')->paginate($perPage)->withQueryString());
+        // Admin list: newest first. Everyone else: soonest first.
+        $user?->isAdmin() ? $query->orderByDesc('starts_at') : $query->orderBy('starts_at');
+
+        return EventResource::collection($query->paginate($perPage)->withQueryString());
     }
 
     /** GET /events/{event} — includes a few attendees and how many people you follow are going. */

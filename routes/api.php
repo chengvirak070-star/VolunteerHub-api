@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CommentController;
@@ -11,6 +12,7 @@ use App\Http\Controllers\LikeController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Organizer;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SavedEventController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\UserController;
@@ -93,5 +95,32 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
         Route::delete('events/{event}', [Organizer\EventController::class, 'destroy']);
         Route::get('events/{event}/registrations', [Organizer\EventController::class, 'registrations']);
         Route::post('registrations/{registration}/attendance', [Organizer\AttendanceController::class, 'store']);
+    });
+
+    // Reports from users
+    Route::post('reports', [ReportController::class, 'store'])->middleware('throttle:20,1');
+    Route::post('bug-reports', [ReportController::class, 'bug'])->middleware('throttle:10,1');
+
+    // Admin
+    Route::middleware('role:admin')->group(function () {
+        Route::get('dashboard', Admin\DashboardController::class);
+        Route::delete('events/{event}', [Admin\EventController::class, 'destroy']);
+        Route::post('approvals/{type}/{id}/approve', [Admin\ApprovalController::class, 'approve'])->whereNumber('id');
+        Route::post('approvals/{type}/{id}/decline', [Admin\ApprovalController::class, 'decline'])->whereNumber('id');
+
+        Route::prefix('admin')->group(function () {
+            Route::get('approvals', [Admin\ApprovalController::class, 'index']);
+            Route::get('users', [Admin\UserController::class, 'index']);
+            Route::post('users/{user}/block', [Admin\UserController::class, 'block']);
+            Route::post('users/{user}/unblock', [Admin\UserController::class, 'unblock']);
+            Route::get('reports', [Admin\ModerationController::class, 'reports']);
+            Route::post('reports/{report}/resolve', [Admin\ModerationController::class, 'resolve']);
+            Route::get('bug-reports', [Admin\ModerationController::class, 'bugs']);
+            Route::post('bug-reports/{bugReport}/fixed', [Admin\ModerationController::class, 'fixed']);
+            Route::get('categories', [Admin\CategoryController::class, 'index']);
+            Route::post('categories', [Admin\CategoryController::class, 'store']);
+            Route::put('categories/{category}', [Admin\CategoryController::class, 'update']);
+            Route::delete('categories/{category}', [Admin\CategoryController::class, 'destroy']);
+        });
     });
 });
